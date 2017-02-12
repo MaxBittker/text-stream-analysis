@@ -6,17 +6,14 @@
   (:require [clojure.data.json :as json]
             [http.async.client :as ac]
             [clojure.string :as str]
+            [text-stream-analysis.creds :as creds]
             [taoensso.carmine :as car :refer (wcar)])
   (:import [twitter.callbacks.protocols AsyncStreamingCallback]))
 
 (def redis-conn {:pool {} :spec {:host "127.0.0.1" :port 6379}}) ; See `wcar` docstring for opts
 (defmacro wcar* [& body] `(car/wcar redis-conn ~@body))
 
-
-(def my-creds (make-oauth-creds "6cXKbrQsVtXIf2fjk0wbqqNvP"
-                                "FHu6qlRgj6k8pqwM7PkEpBbIZHPrP9hZUVmeARb5LTkscfZwvb"
-                                "366913586-puKupRplCkBdiP4TtE0MmGGHJ5R0MPsAZOLcMk5Y"
-                                "tsc63AtaZNSSZlb4An8GcXR7rP19C2rZKHmMXZgonGbii"))
+(def my-creds (apply make-oauth-creds creds/creds))
 
 (defn get-all[]
   (let [keys (wcar* (car/keys "*"))]
@@ -25,9 +22,8 @@
         [k (Integer/parseInt (wcar* (car/get k)))])
      keys)))
 
-;(println (sort-by second (get-all)))
-(doseq [pair (sort-by second (get-all))]
-  (println pair))
+;(doseq [pair (sort-by second (get-all))]
+;  (println pair))
 
 (defn inc-word [word]
   (let [c (wcar* (car/incr word))]
